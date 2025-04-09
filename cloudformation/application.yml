@@ -1,0 +1,180 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: task13 for raisetech
+Parameters: 
+
+  BaseName:
+    Description: resourse system name
+    Type: String
+    Default: task13-cf  
+
+  KeyName:
+    Description: The EC2 KeyPair to allow SSH access to the instance 
+    Type: String
+
+  DBAvailabilityZone:
+    Description: RDS AvailabilityZone 
+    Type: String
+    Default: ap-northeast-1a
+
+Resources: 
+
+# IAMロール
+  S3iamRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Path: /
+      AssumeRolePolicyDocument: 
+        Version: "2012-10-17"
+        Statement:
+          -  Effect: Allow
+             Principal:
+              Service:
+                - ec2.amazonaws.com
+             Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonS3FullAccess
+
+# IAMインスタンスプロファイル
+  S3InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: /
+      Roles:
+        - !Ref S3iamRole
+
+# EC2(Instance)
+  EC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      KeyName: !Ref KeyName
+      ImageId: ami-0037237888be2fe22
+      InstanceType: t2.micro
+      Monitoring: false
+      IamInstanceProfile: !Ref S3InstanceProfile
+      NetworkInterfaces:
+        - AssociatePublicIpAddress: true
+          GroupSet: 
+            - !ImportValue raisetech-ec2sgID
+          SubnetId: !ImportValue raisetech-subnet1apbID
+          DeviceIndex: "0"
+      Tags:
+        - Key: Name
+          Value: !Sub ${BaseName}-ec2
+
+# DBsubnetGroup
+  SubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: DBsubnetgroup for MySQL
+      SubnetIds:
+        - !ImportValue raisetech-subnet1apvID
+        - !ImportValue raisetech-subnet1cpvID
+      Tags:
+        - Key: Name
+          Value: !Sub ${BaseName}-subnetgroup
+
+# Secret Maneger(RDS)
+  RDSSecret:
+    Type: "AWS::SecretsManager::Secret"
+    Properties:
+      Name: "MyRDSSecret"
+      Description: "RDS password for my RDS instance"
+      GenerateSecretString:
+        SecretStringTemplate: '{"username": "admin"}'
+        GenerateStringKey: "password"
+        PasswordLength: 16
+        ExcludeCharacters: '"@/\'
+
+# RDS(MySQL)
+  RDS:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      AllocatedStorage: 20
+      DBInstanceClass: db.t4g.micro
+      AvailabilityZone: !Ref DBAvailabilityZone
+      DBSubnetGroupName: !Ref SubnetGroup
+      Engine: mysql
+      EngineVersion: 8.0.39
+      MasterUsername: '{{resolve:secretsmanager:MyRDSSecret:SecretString:username}}'
+      MasterUserPassword: '{{resolve:secretsmanager:MyRDSSecret:SecretString:password}}'
+      MultiAZ: false
+      StorageType: gp2
+      VPCSecurityGroups:
+        - !ImportValue raisetech-rdssgID
+      Tags:
+        - Key: Name
+          Value: !Sub ${BaseName}-rds
+
+# ELB(TargetGroup)
+  TargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckEnabled: true
+      HealthCheckIntervalSeconds: 30
+      HealthCheckPath: /
+      HealthCheckPort: traffic-port
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 5
+      IpAddressType: ipv4
+      Matcher: 
+        HttpCode: 200
+      Name: raisetech-cf-targetgruop
+      Port: 80
+      Protocol: HTTP
+      ProtocolVersion: HTTP1
+      Tags: 
+        - Key: Name
+          Value: !Sub ${BaseName}-targetgroup
+      Targets: 
+        - Id: !Ref EC2Instance
+      TargetType: instance
+      UnhealthyThresholdCount: 2
+      VpcId: !ImportValue raisetech-vpcID
+
+# ALB
+  ALB:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: raisetech-cf-ALB
+      Scheme: internet-facing
+      Type: application
+      IpAddressType: ipv4
+      SecurityGroups: 
+        - !ImportValue raisetech-albsgID
+      Subnets: 
+        - !ImportValue raisetech-subnet1apbID
+        - !ImportValue raisetech-subnet1cpbID
+      Tags: 
+        - Key: Name
+          Value: !Sub ${BaseName}-alb
+
+# Listener
+  Listener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions: 
+        - TargetGroupArn: !Ref TargetGroup
+          Type: forward
+      LoadBalancerArn: !Ref ALB
+      Port: 80
+      Protocol: HTTP
+
+# S3
+  S3Bucket:
+    Type: AWS::S3::Bucket
+    Properties: 
+      BucketName: raisetech-cf-s3
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      Tags:
+        - Key: Name
+          Value: !Sub ${BaseName}-s3
