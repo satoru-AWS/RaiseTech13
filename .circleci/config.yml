@@ -25,7 +25,17 @@ jobs:
       - run:
          name: deploy-cloudformation
          command: |
-           aws cloudformation deploy --template-file cloudformation/application.yml --stack-name raisetech-stack
+           aws cloudformation deploy \
+             --template-file cloudformation/network.yml \
+             --stack-name raisetech-network
+
+           aws cloudformation deploy \
+             --template-file cloudformation/security.yml \
+             --stack-name raisetech-security
+
+           aws cloudformation deploy \
+             --template-file cloudformation/application.yml \
+             --stack-name raisetech-application
 
 
 workflows:
