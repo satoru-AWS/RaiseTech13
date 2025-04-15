@@ -35,7 +35,8 @@ jobs:
 
            aws cloudformation deploy \
              --template-file cloudformation/application.yml \
-             --stack-name raisetech-application
+             --stack-name raisetech-application \
+             --capabilities CAPABILITY_NAMED_IAM
 
 
 workflows:
