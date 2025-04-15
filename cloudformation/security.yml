@@ -1,0 +1,91 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: task13 for raisetech
+
+Parameters:
+  BaseName:
+    Description: resourse system name
+    Type: String
+    Default: task13-cf
+
+  OutputName:
+    Description: output name
+    Type: String
+    Default: raisetech
+
+  MyIP:
+    Description: My local Ipadress
+    Type: String
+    Default: 210.1.187.75/32
+
+Resources: 
+
+# EC2(SecurityGroup)
+  EC2sg:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: EC2-sg
+      GroupDescription: EC2-securitygroup
+      VpcId: !ImportValue raisetech-vpcID
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: !Ref MyIP
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          SourceSecurityGroupId: !Ref ALBsg
+      Tags:
+        - Key: Name
+          Value: !Sub ${BaseName}-ec2sg
+
+# RDS(SecurityGroup)
+  RDSsg:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: RDS-sg
+      GroupDescription: RDS-SequrityGroup
+      VpcId: !ImportValue raisetech-vpcID
+      SecurityGroupIngress:
+        -  IpProtocol: tcp
+           FromPort: 3306
+           ToPort: 3306
+           SourceSecurityGroupId: !Ref EC2sg
+      Tags:
+        - Key: Name
+          Value: !Sub ${BaseName}-rds
+
+# ELB(SequrityGroup)
+  ALBsg:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: ALB-sg
+      GroupDescription: ALB-sg
+      VpcId: !ImportValue raisetech-vpcID
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: !Sub ${BaseName}-albsg
+
+Outputs:
+  CfEC2sg:
+    Description: Information about the value
+    Value:  !Ref EC2sg
+    Export: 
+      Name: !Sub ${OutputName}-ec2sgID
+
+  CfRDSsg:
+    Description: Information about the value
+    Value: !Ref RDSsg
+    Export: 
+      Name: !Sub ${OutputName}-rdssgID
+  
+  CfALBsg:
+    Description: Information about the value
+    Value:  !Ref ALBsg
+    Export: 
+      Name: !Sub ${OutputName}-albsgID

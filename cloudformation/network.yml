@@ -1,0 +1,151 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: task13 for raiseTech 
+
+Parameters:
+  BaseName:
+    Description: resourse system name
+    Type: String
+    Default: task13-cf
+
+  OutputName:
+    Description: output name
+    Type: String
+    Default: raisetech
+
+  Subnet1a:
+    Description: Subnet1a AvailabilityZone
+    Type: String
+    Default: ap-northeast-1a
+
+  Subnet1c:
+    Description: Subnet1c AvailabilityZone
+    Type: String
+    Default: ap-northeast-1c
+
+Resources: 
+
+# VPC
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      Tags:
+        - Key: Name
+          Value: !Sub ${BaseName}-vpc
+
+# subnet
+# private
+  Subnet1aPv:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Ref Subnet1a
+      VpcId: !Ref VPC
+      CidrBlock: 10.0.2.0/24
+      Tags:
+        - Key: Name
+          Value: !Sub ${BaseName}-subnet1apv
+
+  Subnet1cPv:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Ref Subnet1c
+      VpcId: !Ref VPC
+      CidrBlock: 10.0.4.0/24
+      Tags:
+        - Key: Name
+          Value: !Sub ${BaseName}-subnet1cpv
+# public
+  Subnet1aPb:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Ref Subnet1a
+      VpcId: !Ref VPC
+      CidrBlock: 10.0.1.0/24
+      Tags:
+        - Key: Name
+          Value: !Sub ${BaseName}-subnet1apb
+
+  Subnet1cPb:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Ref Subnet1c
+      VpcId: !Ref VPC
+      CidrBlock: 10.0.3.0/24
+      Tags:
+        - Key: Name
+          Value: !Sub ${BaseName}-subnet1cpb
+
+# InternetGateway
+  Igw:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub ${BaseName}-igw
+  AttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref VPC
+      InternetGatewayId: !Ref Igw
+
+# routetable
+  RouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub ${BaseName}-routetable
+
+# ルート設定
+  RoutePublic:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref RouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref Igw
+
+  # パブリックサブネットを設定
+  RouteTablePublic1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref Subnet1aPb
+      RouteTableId: !Ref RouteTable
+
+  RouteTablePublic2:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref Subnet1cPb
+      RouteTableId: !Ref RouteTable
+
+Outputs:
+  VPC:
+    Description: Information about the value
+    Value: !Ref VPC
+    Export: 
+      Name: !Sub ${OutputName}-vpcID
+
+  Subnet1aPb:
+    Description: Information about the value
+    Value: !Ref Subnet1aPb
+    Export: 
+      Name: !Sub ${OutputName}-subnet1apbID
+
+  Subnet1cPb:
+    Description: Information about the value
+    Value: !Ref Subnet1cPb
+    Export: 
+      Name: !Sub ${OutputName}-subnet1cpbID
+
+  Subnet1aPv:
+    Description: Information about the value
+    Value: !Ref Subnet1aPv
+    Export: 
+      Name: !Sub ${OutputName}-subnet1apvID
+
+  Subnet1cPv:
+    Description: Information about the value
+    Value: !Ref Subnet1cPv
+    Export: 
+      Name: !Sub ${OutputName}-subnet1cpvID
