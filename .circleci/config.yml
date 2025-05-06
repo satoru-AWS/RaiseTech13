@@ -2,6 +2,11 @@ version: 2.1
 orbs:
   python: circleci/python@2.0.3
   aws-cli: circleci/aws-cli@5.2.0
+
+executors:
+  ansible-executor:
+    docker:
+      - image: cimg/base:stable
   
 jobs:
   cfn-lint:
@@ -38,12 +43,43 @@ jobs:
              --stack-name raisetech-application \
              --capabilities CAPABILITY_NAMED_IAM
 
+  execute-ansible:
+    executor: ansible-executor
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints:
+            - "SHA256:vu7ORaAtU++mhu0ZS/iEpSCKW+Ib2FdLOvo6KeGSOMI"
+      - run:
+          name: Install dependencies
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y python3-pip jq
+            pip3 install awscli ansible
+      - run:
+          name: Get EC2 Public IP and inventory
+          command: |
+            EC2_IP=$(aws ec2 describe-instances \
+              --filters "Name=tag:Name,Values=task13-cf-ec2" \
+              --query "Reservations[0].Instances[0].PublicIpAddress" \
+              --output text)
+            
+            echo "[web]" > inventory
+            echo "ec2-user@${EC2_IP} ansible_ssh_common_args='-o StrictHostKeyChecking=no'" >> inventory
+            cat inventory
+      - run:
+          name: Run Ansible Playbook
+          command: |
+            ansible-playbook -i inventory ansible/playbook.yml
 
 workflows:
   raisetech-automation-task:
     jobs:
-      - cfn-lint
-      - execute-cloudformation:
+      #- cfn-lint
+      #- execute-cloudformation:
+      #    requires:
+      #      - cfn-lint
+      - execute-ansible:
           requires:
-            - cfn-lint
+            - execute-cloudformation
           

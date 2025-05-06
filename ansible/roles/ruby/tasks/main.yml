@@ -1,0 +1,91 @@
+- name: Check rbenv installed
+  shell: bash -lc "rbenv -v"
+  register: rbenv_exists
+  changed_when: false
+  ignore_errors: true
+
+- name: Install rbenv
+  git:
+    repo: https://github.com/rbenv/rbenv.git
+    dest: "{{ ansible_env.HOME }}/.rbenv"
+    update: no
+  when: rbenv_exists is failed
+
+- name: Check ruby-build installed
+  shell: bash -lc "test -d ~/.rbenv/plugins/ruby-build"
+  register: ruby_build_exists
+  changed_when: false
+  ignore_errors: true
+
+- name: Install ruby-build plugin
+  git:
+    repo: https://github.com/sstephenson/ruby-build.git
+    dest: "{{ ansible_env.HOME}}/.rbenv/plugins/ruby-build"
+    update: no
+  when: ruby_build_exists is failed
+
+- name: Add rbenv PATH to bash_profile
+  lineinfile:
+    path: "{{ ansible_env.HOME }}/.bash_profile"
+    line: 'export PATH="$HOME/.rbenv/bin:$PATH"'
+    create: yes
+
+- name: Add rbenv init to bash_profile
+  lineinfile:
+    path: "{{ ansible_env.HOME }}/.bash_profile"
+    line: 'eval "$(rbenv init -)"'
+    create: yes
+
+- name: Reload bash_profile
+  shell: source ~/.bash_profile
+  args:
+    executable: /bin/bash
+
+- name: Check Ruby {{ ruby_version }} installed
+  shell: bash -lc "rbenv versions | grep {{ ruby_version }}"
+  register: ruby_installed
+  changed_when: false
+  ignore_errors: true
+
+- name: Install Ruby {{ ruby_version }}
+  shell: |
+    rbenv install -s {{ ruby_version }}
+    rbenv global {{ ruby_version }}
+    rbenv rehash
+  when: ruby_installed is failed
+  environment:
+    PATH: "{{ ansible_env.HOME}}/.rbenv/bin:{{ ansible_env.PATH }}"
+  args:
+    executable: /bin/bash
+
+- name: Check Bundler {{ bundler_version }} installed
+  shell: bash -lc "bundler -v | grep {{ bundler_version }}"
+  register: bundler_installed
+  changed_when: false
+  ignore_errors: true
+
+- name: Install Bundler {{ bundler_version }}
+  shell: |
+    gem install bundler -v {{ bundler_version }}
+    rbenv rehash
+  when: bundler_installed is failed
+  environment:
+    PATH: "{{ ansible_env.HOME }}/.rbenv/bin:{{ ansible_env.PATH }}"
+  args:
+    executable: /bin/bash
+
+- name: Check Rails {{ rails_version }} installed
+  shell: bash -lc "rails -v | grep {{ rails_version }}"
+  register: rails_installed
+  changed_when: false
+  ignore_errors: true
+  
+- name: Install Rails {{ rails_version }}
+  shell: |
+    gem install rails -v {{ rails_version }}
+    rbenv rehash
+  when: rails_installed is failed
+  environment:
+    PATH: "{{ ansible_env.HOME }}/.rbenv/bin:{{ ansible_env.PATH }}"
+  args:
+    executable: /bin/bash

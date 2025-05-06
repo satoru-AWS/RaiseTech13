@@ -1,0 +1,10 @@
+- name: Remove mariaDB
+  yum:
+    name: mariadb*
+    state: absent
+
+- name: Install mysql
+  yum:
+    name: mysql-server
+    state: present
+    
