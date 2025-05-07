@@ -24,4 +24,5 @@
       - libcurl
       - libcurl-devel
       - curl
+      - mysql-devel
     state: present

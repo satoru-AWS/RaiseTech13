@@ -1,3 +1,8 @@
+- name: Remove Gemfile.lock
+  file:
+    path: "{{ app_dir }}/Gemfile.lock"
+    state: absent
+
 - name: Clone Rails app
   git: 
     repo: "https://github.com/yuta-ushijima/raisetech-live8-sample-app.git"
@@ -7,6 +12,7 @@
 
 - name: Run bundle install
   shell: bash -lc "bundle install"
+  become: false
   args:
     chdir: "{{ app_dir }}"
   environment:
