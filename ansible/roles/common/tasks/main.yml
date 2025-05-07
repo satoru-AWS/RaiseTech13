@@ -1,9 +1,11 @@
 - name: Update all packages
+  become: true
   yum:
     name: "*"
     state: latest
 
 - name: Install packages
+  become: true
   yum:
     name:
       - git
