@@ -66,11 +66,12 @@
 
 - name: Install Bundler {{ bundler_version }}
   shell: |
+    export PATH="&HOME/.rbenv/bin:$HOME/.rbenv/shims:$PATH"
+    eval "$(rbenv init -)"
     gem install bundler -v {{ bundler_version }}
     rbenv rehash
   when: bundler_installed is failed
-  environment:
-    PATH: "{{ ansible_env.HOME }}/.rbenv/bin:{{ ansible_env.PATH }}"
+  become_user: ec2-user
   args:
     executable: /bin/bash
 
