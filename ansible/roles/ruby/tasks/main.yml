@@ -1,4 +1,5 @@
 - name: Check rbenv installed
+  become_user: ec2-user
   shell: bash -lc "rbenv -v"
   register: rbenv_exists
   changed_when: false
@@ -39,11 +40,6 @@
     path: "/home/ec2-user/.bash_profile"
     line: 'eval "$(rbenv init -)"'
     insertafter: EOF
-
-- name: Reload bash_profile
-  shell: source ~/.bash_profile
-  args:
-    executable: /bin/bash
 
 - name: Check Ruby {{ ruby_version }} installed
   shell: bash -lc "rbenv versions | grep {{ ruby_version }}"
