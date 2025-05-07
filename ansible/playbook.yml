@@ -1,5 +1,5 @@
-- hosts: all
-  become_user: ec2-user
+- name: Deploy Rils application
+  hosts: all
   become: true
   vars:
     app_dir: /home/ec2-user/raisetech-live8-sample-app
