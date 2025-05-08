@@ -10,6 +10,26 @@
     version: main
     force: yes
 
+- name: Force native build for nokogiri
+  become_user: ec2-user
+  shell: |
+    export PATH="$HOME/.rbenv/bin:$HOME/.rbenv/shims:$PATH"
+    eval "$(rbenv init -)"
+    bundle config set --local force_ruby_platform true
+  args:
+    chdir: "{{ app_dir }}"
+    executable: /bin/bash
+
+- name: Set MYSQL_CFLAGS and MYSQL_LIBS
+  become_user: ec2-user
+  shell: |
+    export PATH="$HOME/.rbenv/bin:$HOME/.rbenv/shims:$PATH"
+    eval "$(rbenv init -)"
+    bundle config build.mysql2 --with-mysql-config=/usr/bin/mysql_config
+  args:
+    chdir: "{{ app_dir }}"
+    executable: /bin/bash
+
 - name: Run bundle install
   become_user: ec2-user
   shell: |
