@@ -11,19 +11,25 @@
     force: yes
 
 - name: Run bundle install
-  shell: bash -lc "bundle install"
-  become: false
+  become_user: ec2-user
+  shell: |
+    export PATH="$HOME/.rbenv/bin:$HOME/.rbenv/shims:$PATH"
+    eval "$(rbenv init -)"
+    bundle install
   args:
     chdir: "{{ app_dir }}"
-  environment:
-    PATH: "{{ ansible_env.HOME }}/.rbenv/shims:{{ ansible_env.HOME }}/.rbenv/bin:{{ ansible_env.PATH }}"
+    executable: /bin/bash
 
 - name: Run yarn install
-  shell: bash -lc "yarn install"
+  become_user: ec2-user
+  shell: |
+    export NVM_DIR="$HOME/.nvm"
+    [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+    nvm user {{ node_version }}
+    yarn install
   args:
     chdir: "{{ app_dir }}"
-  environment:
-    PATH: "{{ ansible_env.HOME }}/.nvm/versions/node/v{{ node_version }}/bin:{{ ansible_env.PATH }}"
+    executable: /bin/bash
 
 - name: Create database.yml
   template:

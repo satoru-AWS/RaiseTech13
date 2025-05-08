@@ -1,3 +1,4 @@
 db_user: "{{ lookup('env', 'AWS_DB_USER') }}"
 db_password: "{{ lookup('env', 'AWS_DB_PASSWORD') }}"
 db_host: "{{ lookup('env', 'AWS_DB_HOST') }}"
+node_version: v17.9.1
