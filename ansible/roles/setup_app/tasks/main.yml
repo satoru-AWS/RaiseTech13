@@ -30,3 +30,11 @@
   args:
     chdir: "{{ app_dir }}"
     executable: /bin/bash
+
+- name: Run rails db:migrate
+  become_user: ec2-user 
+  shell: bash -lc "rails db:migrate"
+  args:
+    chdir: "{{ app_dir }}"
+  environment:
+    PATH: "{{ ansible_env.HOME }}/.rbenv/shims:{{ ansible_env.HOME }}/.rbenv/bin:{{ ansible_env.PATH }}"

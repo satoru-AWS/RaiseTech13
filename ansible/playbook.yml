@@ -8,7 +8,6 @@
     - common
     - ruby
     - node 
-    - setup_app
     - mysql
-   
+    - setup_app
     

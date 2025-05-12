@@ -33,11 +33,3 @@
     owner: ec2-user
     group: ec2-user
     mode: "0644"
-
-- name: Run rails db:migrate
-  become_user: ec2-user 
-  shell: bash -lc "rails db:migrate"
-  args:
-    chdir: "{{ app_dir }}"
-  environment:
-    PATH: "{{ ansible_env.HOME }}/.rbenv/shims:{{ ansible_env.HOME }}/.rbenv/bin:{{ ansible_env.PATH }}"
