@@ -7,7 +7,8 @@
   roles:
     - common
     - ruby
-    - node
-    - mysql
+    - node 
     - setup_app
+    - mysql
+   
     
