@@ -10,34 +10,6 @@
     version: main
     force: yes
 
-- name: Change ownership of app_dir to ec2-user
-  become: true
-  file:
-    path: "{{ app_dir }}"
-    owner: ec2-user
-    group: ec2-user
-    recurse: yes
-
-- name: Force native build for nokogiri
-  become_user: ec2-user
-  shell: |
-    export PATH="$HOME/.rbenv/bin:$HOME/.rbenv/shims:$PATH"
-    eval "$(rbenv init -)"
-    bundle config set --local force_ruby_platform true
-  args:
-    chdir: "{{ app_dir }}"
-    executable: /bin/bash
-
-- name: Set MYSQL_CFLAGS and MYSQL_LIBS
-  become_user: ec2-user
-  shell: |
-    export PATH="$HOME/.rbenv/bin:$HOME/.rbenv/shims:$PATH"
-    eval "$(rbenv init -)"
-    bundle config build.mysql2 --with-mysql-config=/usr/bin/mysql_config
-  args:
-    chdir: "{{ app_dir }}"
-    executable: /bin/bash
-
 - name: Run bundle install
   become_user: ec2-user
   shell: |
@@ -58,18 +30,3 @@
   args:
     chdir: "{{ app_dir }}"
     executable: /bin/bash
-
-- name: Create database.yml
-  template:
-    src: database.yml.j2
-    dest: "{{ app_dir }}/config/database.yml"
-    owner: ec2-user
-    group: ec2-user
-    mode: "0644"
-
-- name: Run rails db:migrate
-  shell: bash -lc "rails db:migrate"
-  args:
-    chdir: "{{ app_dir }}"
-  environment:
-    PATH: "{{ ansible_env.HOME }}/.rbenv/shims:{{ ansible_env.HOME }}/.rbenv/bin:{{ ansible_env.PATH }}"

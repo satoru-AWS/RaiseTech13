@@ -2,4 +2,42 @@
   yum:
     name: mariadb*
     state: absent
-    
+
+- name: Import MySQL GPG key
+  become: true
+  rpm_key:
+    state: present
+    key: https://repo.mysql.com/RPM-GPG-KEY-mysql-2023
+
+- name: Install Mysql repository
+  become: true
+  shell: |
+    if ! yum repolist | grep -q mysql80-community; then
+      yum localinstall -y https://dev.mysql.com/get/mysql80-community-release-el7-7.noarch.rpm
+    fi
+  args:
+    executable: /bin/bash
+
+- name: Install MySQL community server and development tools
+  become: true
+  yum:
+    name:
+     - mysql-community-server
+     - mysql-community-devel
+    state: present
+
+- name: Create database.yml
+  template:
+    src: database.yml.j2
+    dest: "{{ app_dir }}/config/database.yml"
+    owner: ec2-user
+    group: ec2-user
+    mode: "0644"
+
+- name: Run rails db:migrate
+  become_user: ec2-user 
+  shell: bash -lc "rails db:migrate"
+  args:
+    chdir: "{{ app_dir }}"
+  environment:
+    PATH: "{{ ansible_env.HOME }}/.rbenv/shims:{{ ansible_env.HOME }}/.rbenv/bin:{{ ansible_env.PATH }}"
