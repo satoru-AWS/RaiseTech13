@@ -1,10 +1,12 @@
 - name: Check nvm is installed
+  become_user: ec2-user
   shell: bash -lc "nvm -v"
   register: nvm_exists
   changed_when: false
   ignore_errors: true
 
 - name: Install nvm
+  become_user: ec2-user
   shell: >
     curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
   args:
@@ -14,11 +16,13 @@
   when: nvm_exists is failed
 
 - name: Check Node.js {{ node_version }} is installed
+  become_user: ec2-user
   shell: bash -lc "node -v | grep '{{ node_version }}'"
   register: node_version_check
   ignore_errors: true
 
 - name: Install Node.js {{ node_version }} using nvm
+  become_user: ec2-user
   shell: >
     export NVM_DIR="$HOME/.nvm" && \
     [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh" && \
@@ -29,16 +33,19 @@
   when: node_version_check is failed
 
 - name: Check yarn {{ yarn_version }} is installed
+  become_user: ec2-user
   shell: bash -lc "yarn -v | grep '{{ yarn_version }}'"
   register: yarn_version_check
   changed_when: false
   ignore_errors: true
 
 - name: Install yarn {{ yarn_version }}
+  become_user: ec2-user
   shell: bash -lc "npm install -g yarn@{{ yarn_version }}"
   when: yarn_version_check is failed
 
 - name: Add nvm init to .bash_profile
+  become_user: ec2-user
   lineinfile:
     path: /home/ec2-user/.bash_profile
     line: 'export NVM_DIR="$HOME/.nvm" && [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"'
@@ -46,6 +53,7 @@
     insertafter: EOF
 
 - name: Add nvm init to .bashrc
+  become_user: ec2-user
   lineinfile:
     path: /home/ec2-user/.bashrc
     line: 'export NVM_DIR="$HOME/.nvm" && [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"'
