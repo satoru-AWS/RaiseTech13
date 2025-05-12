@@ -26,6 +26,7 @@
     export NVM_DIR="$HOME/.nvm"
     [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
     nvm use {{ node_version }}
+    export PATH="$HOME/.yarn/bin:$PATH"
     yarn install
   args:
     chdir: "{{ app_dir }}"
