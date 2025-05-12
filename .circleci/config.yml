@@ -75,10 +75,10 @@ jobs:
 workflows:
   raisetech-automation-task:
     jobs:
-      #- cfn-lint
-      #- execute-cloudformation:
-      #    requires:
-      #      - cfn-lint
-      - execute-ansible
-      #    requires:
-      #      - execute-cloudformation
+      - cfn-lint
+      - execute-cloudformation:
+          requires:
+            - cfn-lint
+      - execute-ansible:
+          requires:
+            - execute-cloudformation
