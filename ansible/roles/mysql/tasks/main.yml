@@ -25,11 +25,3 @@
      - mysql-community-server
      - mysql-community-devel
     state: present
-
-- name: Create database.yml
-  template:
-    src: database.yml.j2
-    dest: "{{ app_dir }}/config/database.yml"
-    owner: ec2-user
-    group: ec2-user
-    mode: "0644"
