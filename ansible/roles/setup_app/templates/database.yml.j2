@@ -53,6 +53,6 @@ test:
 production:
   <<: *default
   database: raisetech_live8_sample_app_production
-  username: <%= Rails.application.credentials.dig(:db, :username) %>
-  password: <%= Rails.application.credentials.dig(:db, :password) %>
-  host: <%= Rails.application.credentials.dig(:db, :host) %>
+  username: admin
+  password: {{ db_password }}
+  host: {{ db_host }}
