@@ -40,6 +40,11 @@
     chdir: "{{ app_dir }}"
     executable: /bin/bash
 
+- name: Precompile assets
+  shell: bash -lc "RAILS_ENV=development bundle exec rails assets:precompile"
+  args:
+    chdir: "{{ app_dir }}"
+
 - name: Create database.yml
   template:
     src: database.yml.j2
