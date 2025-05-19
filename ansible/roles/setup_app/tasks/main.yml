@@ -48,6 +48,12 @@
     group: ec2-user
     mode: "0644"
 
+- name: Run rails db:create
+  ansible.builtin.shell: bash -lc "rails db:create"
+  args:
+    chdir: "{{ app_dir }}"
+  become_user: ec2-user
+
 - name: Run rails db:migrate
   become_user: ec2-user 
   shell: bash -lc "rails db:migrate"
