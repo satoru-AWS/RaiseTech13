@@ -104,9 +104,19 @@ jobs:
             echo "export DB_PASSWORD=$DB_PASSWORD" >> $BASH_ENV
 
       - run:
+          name: Get RDS endpoint
+          command: |
+            DB_HOST=$(aws rds describe-db-instances \
+              --region $AWS_DEFAULT_REGION \
+              --query "DBInstances[?DBInstanceIdentifier=='task13-cf-rds-instance'].Endpoint.Address" \
+              --output text)
+            echo "RDS endpoint acquired: $DB_HOST"
+            echo "export DB_HOST=$DB_HOST" >> $BASH_ENV
+
+      - run:
           name: Run Ansible Playbook
           command: |
-            ansible-playbook -i inventory ansible/playbook.yml --extra-vars "db_password=$DB_PASSWORD"
+            ansible-playbook -i inventory ansible/playbook.yml --extra-vars "db_password=$DB_PASSWORD db_host=$DB_HOST"
 
 workflows:
   raisetech-automation-task:

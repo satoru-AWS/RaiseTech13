@@ -91,6 +91,7 @@ Resources:
   RDS:
     Type: AWS::RDS::DBInstance
     Properties:
+      DBInstanceIdentifier: !Sub "${BaseName}-rds-instance"
       AllocatedStorage: 20
       DBInstanceClass: db.t4g.micro
       AvailabilityZone: !Ref DBAvailabilityZone
