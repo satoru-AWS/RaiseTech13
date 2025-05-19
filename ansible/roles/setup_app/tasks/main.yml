@@ -42,6 +42,7 @@
 
 - name: Precompile assets
   shell: bash -lc "RAILS_ENV=development bundle exec rails assets:precompile"
+  become_user: ec2-user
   args:
     chdir: "{{ app_dir }}"
 
