@@ -21,7 +21,7 @@
     mode: "0644"
 
 - name: Reloade systemd
-  command: systemctl demon-reexec
+  command: systemctl daemon-reexec
 
 - name: Create Puma service
   systemd:
