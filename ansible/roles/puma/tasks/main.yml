@@ -20,11 +20,16 @@
     dest: /etc/systemd/system/puma.service
     mode: "0644"
 
-- name: Reloade systemd
-  command: systemctl daemon-reexec
+- name: Reload systemd
+  command: systemctl daemon-reload
 
 - name: Create Puma service
   systemd:
     name: puma
     enabled: yes
     state: started
+
+- name: Fix permission /home/ec2-user for nginx
+  file:
+    path: /home/ec2-user
+    mode: "0755"
