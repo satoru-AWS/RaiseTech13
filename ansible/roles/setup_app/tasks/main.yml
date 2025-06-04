@@ -67,3 +67,11 @@
     chdir: "{{ app_dir }}"
   environment:
     PATH: "{{ ansible_env.HOME }}/.rbenv/shims:{{ ansible_env.HOME }}/.rbenv/bin:{{ ansible_env.PATH }}"
+
+- name: Create development.rb
+  template:
+    src: development.rb.j2
+    dest: "{{ app_dir }}/config/environments/development.rb"
+    owner: ec2-user
+    group: ec2-user
+    mode: "0644"
