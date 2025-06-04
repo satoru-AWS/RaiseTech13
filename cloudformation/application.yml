@@ -182,7 +182,7 @@ Resources:
           Value: !Sub ${BaseName}-s3
 
 Outputs:
-  ALBendpoint:
+  ALBDNSName:
     Description: DNSName of ALB
     Value: !GetAtt ALB.DNSName
     Export:
