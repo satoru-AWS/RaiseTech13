@@ -185,5 +185,5 @@ Outputs:
   ALBendpoint:
     Description: DNSName of ALB
     Value: !GetAtt ALB.DNSName
-    export:
-      Name: ALBDNSName
+    Export:
+      Name: raisetech-alb-dns-name
