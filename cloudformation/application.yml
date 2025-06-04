@@ -180,3 +180,10 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub ${BaseName}-s3
+
+Outputs:
+  ALBendpoint:
+    Description: DNSName of ALB
+    Value: !GetAtt ALB.DNSName
+    export:
+      Name: ALBDNSName

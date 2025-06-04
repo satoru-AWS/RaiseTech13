@@ -106,8 +106,13 @@ jobs:
               --region $AWS_DEFAULT_REGION \
               --query "DBInstances[?DBInstanceIdentifier=='task13-cf-rds-instance'].Endpoint.Address" \
               --output text)
+            
+            ALB_DNS_NAME=$(aws cloudformation describe-stacks \
+              --stack-name raisetech-application \
+              --query "Stacks[0].Outputs[?OutputKey=='ALBDNSName'].OutputValue" \
+              --output text)
 
-            ansible-playbook -i inventory ansible/playbook.yml --extra-vars "db_password=$DB_PASSWORD db_host=$DB_HOST"
+            ansible-playbook -i inventory ansible/playbook.yml --extra-vars "db_password=$DB_PASSWORD db_host=$DB_HOST alb_dns_name=$ALB_DNS_NAME"
 
 workflows:
   raisetech-automation-task:
