@@ -6,6 +6,7 @@ After=network.target
 Type=simple
 User=ec2-user
 WorkingDirectory={{ app_dir }}
+Environment=S3_BUCKET_NAME={{ s3_bucket_name }}
 ExecStart=/home/ec2-user/.rbenv/shims/bundle exec puma -C {{ app_dir }}/config/puma.rb
 Restart=always
 
