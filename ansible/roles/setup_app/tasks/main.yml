@@ -76,13 +76,6 @@
     group: ec2-user
     mode: "0644"
 
-- name: Restart Puma
-  become: true
-  ansible.builtin.systemd:
-    name: puma
-    state: restarted
-    enabled: true
-
 - name: Create storage.yml
   template:
     src: storage.yml.j2

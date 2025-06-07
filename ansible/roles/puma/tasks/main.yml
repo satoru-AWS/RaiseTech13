@@ -33,3 +33,10 @@
   file:
     path: /home/ec2-user
     mode: "0755"
+
+- name: Restart Puma
+  become: true
+  ansible.builtin.systemd:
+    name: puma
+    state: restarted
+    enabled: true
