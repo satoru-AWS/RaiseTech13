@@ -10,7 +10,7 @@ local:
 amazon:
  service: S3
  region: ap-northeast-1
- bucket: {{ "S3_BUCKET_NAME" }}
+ bucket: <%= ENV["S3_BUCKET_NAME"] %>
 
 # Remember not to checkin your GCS keyfile to a repository
 # google:
