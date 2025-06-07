@@ -187,3 +187,9 @@ Outputs:
     Value: !GetAtt ALB.DNSName
     Export:
       Name: raisetech-alb-dns-name
+
+  S3BucketName:
+    Description: BucketName of S3
+    Value: !Ref S3Bucket
+    Export:
+      Name: raisetech-s3-bucket-name
