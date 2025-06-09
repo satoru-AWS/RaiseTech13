@@ -1,0 +1,27 @@
+- name: Remove mariaDB
+  yum:
+    name: mariadb*
+    state: absent
+
+- name: Import MySQL GPG key
+  become: true
+  rpm_key:
+    state: present
+    key: https://repo.mysql.com/RPM-GPG-KEY-mysql-2023
+
+- name: Install Mysql repository
+  become: true
+  shell: |
+    if ! yum repolist | grep -q mysql80-community; then
+      yum localinstall -y https://dev.mysql.com/get/mysql80-community-release-el7-7.noarch.rpm
+    fi
+  args:
+    executable: /bin/bash
+
+- name: Install MySQL community server and development tools
+  become: true
+  yum:
+    name:
+     - mysql-community-server
+     - mysql-community-devel
+    state: present

@@ -91,6 +91,7 @@ Resources:
   RDS:
     Type: AWS::RDS::DBInstance
     Properties:
+      DBInstanceIdentifier: !Sub "${BaseName}-rds-instance"
       AllocatedStorage: 20
       DBInstanceClass: db.t4g.micro
       AvailabilityZone: !Ref DBAvailabilityZone
@@ -179,3 +180,16 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub ${BaseName}-s3
+
+Outputs:
+  ALBDNSName:
+    Description: DNSName of ALB
+    Value: !GetAtt ALB.DNSName
+    Export:
+      Name: raisetech-alb-dns-name
+
+  S3BucketName:
+    Description: BucketName of S3
+    Value: !Ref S3Bucket
+    Export:
+      Name: raisetech-s3-bucket-name

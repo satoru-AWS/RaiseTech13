@@ -2,6 +2,11 @@ version: 2.1
 orbs:
   python: circleci/python@2.0.3
   aws-cli: circleci/aws-cli@5.2.0
+
+executors:
+  ansible-executor:
+    docker:
+      - image: cimg/base:stable
   
 jobs:
   cfn-lint:
@@ -19,9 +24,9 @@ jobs:
     steps:
       - checkout
       - aws-cli/setup:
-         aws_access_key_id: AWS_ACCESS_KEY_ID
-         aws_secret_access_key: AWS_SECRET_ACCESS_KEY
-         region: AWS_DEFAULT_REGION
+          aws_access_key_id: AWS_ACCESS_KEY_ID
+          aws_secret_access_key: AWS_SECRET_ACCESS_KEY
+          region: AWS_DEFAULT_REGION
       - run:
          name: deploy-cloudformation
          command: |
@@ -38,6 +43,81 @@ jobs:
              --stack-name raisetech-application \
              --capabilities CAPABILITY_NAMED_IAM
 
+  execute-ansible:
+    executor: ansible-executor
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints:
+            - "SHA256:vu7ORaAtU++mhu0ZS/iEpSCKW+Ib2FdLOvo6KeGSOMI"
+      - run:
+          name: Install dependencies
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y python3-pip jq
+            pip3 install awscli ansible
+            pip3 install boto3
+
+      - aws-cli/setup:
+          aws_access_key_id: AWS_ACCESS_KEY_ID
+          aws_secret_access_key: AWS_SECRET_ACCESS_KEY
+          region: AWS_DEFAULT_REGION
+
+      - run:
+          name: Get EC2 Public IP and inventory(retry)
+          command: |
+            for i in {1..20}; do
+              EC2_IP=$(aws ec2 describe-instances \
+                --filters "Name=tag:Name,Values=task13-cf-ec2" \
+                --query "Reservations[*].Instances[*].PublicIpAddress" \
+                --output text)
+
+              if [[ "$EC2_IP" != "None" ]]; then
+                echo "EC2 IP acquired: $EC2_IP"
+                break
+              fi
+
+              echo "Waitng for EC2 to acquire public IP..."
+              sleep 5
+            done
+
+            if [[ "$EC2_IP" == "None" ]]; then
+              echo "Failed to get EC2 IP"
+              exit 1
+            fi
+
+            echo "[web]" > inventory
+            echo "ec2-user@${EC2_IP} ansible_ssh_common_args='-o StrictHostKeyChecking=no'" >> inventory
+            cat inventory
+
+      - run:
+          name: Install ansible collections
+          command: |
+            ansible-galaxy collection install amazon.aws
+
+      - run:
+          name: Run Ansible Playbook
+          command: |
+            DB_PASSWORD=$(aws secretsmanager get-secret-value \
+              --secret-id MyRDSSecret \
+              --query 'SecretString' --output text | jq -r '.password')
+
+            DB_HOST=$(aws rds describe-db-instances \
+              --region $AWS_DEFAULT_REGION \
+              --query "DBInstances[?DBInstanceIdentifier=='task13-cf-rds-instance'].Endpoint.Address" \
+              --output text)
+            
+            ALB_DNS_NAME=$(aws cloudformation describe-stacks \
+              --stack-name raisetech-application \
+              --query "Stacks[0].Outputs[?OutputKey=='ALBDNSName'].OutputValue" \
+              --output text)
+
+            S3_BUCKET_NAME=$(aws cloudformation describe-stacks \
+              --stack-name raisetech-application \
+              --query "Stacks[0].Outputs[?OutputKey=='S3BucketName'].OutputValue" \
+              --output text)
+
+            ansible-playbook -i inventory ansible/playbook.yml --extra-vars "db_password=$DB_PASSWORD db_host=$DB_HOST alb_dns_name=$ALB_DNS_NAME s3_bucket_name=$S3_BUCKET_NAME"
 
 workflows:
   raisetech-automation-task:
@@ -46,4 +126,6 @@ workflows:
       - execute-cloudformation:
           requires:
             - cfn-lint
-          
+      - execute-ansible:
+          requires:
+            - execute-cloudformation

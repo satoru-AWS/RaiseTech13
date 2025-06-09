@@ -1,0 +1,85 @@
+- name: Remove Gemfile.lock
+  file:
+    path: "{{ app_dir }}/Gemfile.lock"
+    state: absent
+
+- name: Clone Rails app
+  git: 
+    repo: "https://github.com/yuta-ushijima/raisetech-live8-sample-app.git"
+    dest: "{{ app_dir }}"
+    version: main
+    force: yes
+
+- name: Change permission
+  ansible.builtin.file:
+    path: /home/ec2-user/raisetech-live8-sample-app
+    state: directory
+    recurse: yes
+    owner: ec2-user
+    group: ec2-user
+
+- name: Run bundle install
+  become_user: ec2-user
+  shell: |
+    export PATH="$HOME/.rbenv/bin:$HOME/.rbenv/shims:$PATH"
+    eval "$(rbenv init -)"
+    bundle install
+  args:
+    chdir: "{{ app_dir }}"
+    executable: /bin/bash
+
+- name: Run yarn install
+  become_user: ec2-user
+  shell: |
+    export NVM_DIR="$HOME/.nvm"
+    [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+    nvm use {{ node_version }}
+    export PATH="$HOME/.yarn/bin:$PATH"
+    yarn install
+  args:
+    chdir: "{{ app_dir }}"
+    executable: /bin/bash
+
+- name: Precompile assets
+  shell: bash -lc "RAILS_ENV=development bundle exec rails assets:precompile"
+  become_user: ec2-user
+  args:
+    chdir: "{{ app_dir }}"
+
+- name: Create database.yml
+  template:
+    src: database.yml.j2
+    dest: "{{ app_dir }}/config/database.yml"
+    owner: ec2-user
+    group: ec2-user
+    mode: "0644"
+
+- name: Run rails db:create
+  ansible.builtin.shell: bash -lc "rails db:create"
+  args:
+    chdir: "{{ app_dir }}"
+  become_user: ec2-user
+
+- name: Run rails db:migrate
+  become_user: ec2-user 
+  shell: bash -lc "rails db:migrate"
+  args:
+    chdir: "{{ app_dir }}"
+  environment:
+    PATH: "{{ ansible_env.HOME }}/.rbenv/shims:{{ ansible_env.HOME }}/.rbenv/bin:{{ ansible_env.PATH }}"
+
+- name: Create development.rb
+  template:
+    src: development.rb.j2
+    dest: "{{ app_dir }}/config/environments/development.rb"
+    owner: ec2-user
+    group: ec2-user
+    mode: "0644"
+
+- name: Create storage.yml
+  template:
+    src: storage.yml.j2
+    dest: "{{ app_dir }}/config/storage.yml"
+    owner: ec2-user
+    group: ec2-user
+    mode: "0644"

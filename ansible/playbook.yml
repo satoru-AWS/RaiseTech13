@@ -1,0 +1,14 @@
+- name: Deploy Rils application
+  hosts: all
+  become: true
+  vars:
+    app_dir: /home/ec2-user/raisetech-live8-sample-app
+
+  roles:
+    - common
+    - ruby
+    - node 
+    - mysql
+    - setup_app
+    - puma
+    - nginx

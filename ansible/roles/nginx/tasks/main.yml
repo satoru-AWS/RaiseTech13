@@ -1,0 +1,33 @@
+- name: Check nginx1 is enabled
+  shell: amazon-linux-extras list | grep -q '\[Enabled\].*nginx1'
+  register: nginx_extras_enabled
+  ignore_errors: true
+  changed_when: false
+
+- name: Enable nignx1 extras if not enabled
+  command: amazon-linux-extras enable nginx1
+  when: nginx_extras_enabled.rc != 0
+
+- name: Install nginx if not installed
+  yum:
+    name: nginx
+    state: present
+
+- name: Ensure nginx is running and enabled
+  systemd:
+    name: nginx
+    state: started
+    enabled: yes
+
+- name: Copy nginx config 
+  template:
+    src: rails.conf.j2
+    dest: /etc/nginx/conf.d/rails.conf
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Reload nginx
+  systemd:
+    name: nginx
+    state: reloaded
