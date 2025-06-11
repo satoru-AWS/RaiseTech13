@@ -124,8 +124,6 @@ jobs:
       - image: cimg/ruby:3.2
     steps:
       - checkout
-      - ruby/install:
-          version: 3.2.3
       - add_ssh_keys:
           fingerprints:
             - "SHA256:vu7ORaAtU++mhu0ZS/iEpSCKW+Ib2FdLOvo6KeGSOMI"
