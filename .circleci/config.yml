@@ -157,6 +157,7 @@ jobs:
       - run:
           name: Run serverspec
           command: |
+            cd serverspec
             bundle exec rake spec
 
 workflows:
