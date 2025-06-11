@@ -127,15 +127,14 @@ jobs:
       - add_ssh_keys:
           fingerprints:
             - "SHA256:vu7ORaAtU++mhu0ZS/iEpSCKW+Ib2FdLOvo6KeGSOMI"
-      - run:
-          name: Install awscli
-          command: |
-            sudo apt update && sudo apt install -y jq
-            pip install awscli
 
       - run:
           name: Get EC2 Public IP
           command: |
+            sudo apt update
+            sudo apt install -y python3-pip jq
+            pip3 install awscli
+
             PUBLIC_IP=$(aws ec2 describe-instances \
               --filters "Name=tag:Name,Values=task13-cf-ec2" \
               --query "Reservations[].Instances[].PublicIpAddress" \
