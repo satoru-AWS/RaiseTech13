@@ -21,6 +21,6 @@ describe package('bundler') do
     it { should be_installed.by('gem').with_version('2.3.14') }
 end
 
-describe port(listen_port) do
-    it { should be_listning }
+describe port(80) do
+    it { should be_listening }
 end
