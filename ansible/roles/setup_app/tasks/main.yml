@@ -23,7 +23,9 @@
   shell: |
     export PATH="$HOME/.rbenv/bin:$HOME/.rbenv/shims:$PATH"
     eval "$(rbenv init -)"
-    bundle install
+    gem uninstall bundler -a -x || true
+    gem install bundler -v {{ bundler_version }}
+    rbenv rehash
   args:
     chdir: "{{ app_dir }}"
     executable: /bin/bash
