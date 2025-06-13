@@ -63,10 +63,15 @@
 
 - name: Check Bundler {{ bundler_version }} installed
   become_user: ec2-user
-  shell: bash -lc "bundler -v | grep {{ bundler_version }}"
+  shell: |
+    export PATH="$HOME/.rbenv/bin:$HOME/.rbenv/shims:$PATH"
+    eval "$(rbenv init -)"
+    bundler -v | grep {{ bundler_version }}
   register: bundler_installed
   changed_when: false
   ignore_errors: true
+  args:
+    executable: /bin/bash
 
 - name: Install Bundler {{ bundler_version }}
   shell: |
