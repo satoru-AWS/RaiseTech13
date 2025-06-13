@@ -13,11 +13,11 @@ describe service('nginx') do
     it { should be_running }
 end
 
-describe command('bash -lc "ruby -v"') do
+describe command('~/.rbenv/shims/ruby -v') do
     its(:stdout) { should match /ruby 3\.2\.3/ }
 end
 
-describe command('bash -lc "bundler -v"') do
+describe command('~/.rbenv/shims/bundler -v') do
     its(:stdout) { should match /Bundler version 2\.3\.14/ }
 end
 
