@@ -28,6 +28,11 @@
     chdir: "{{ app_dir }}"
     executable: /bin/bash
 
+- name: Install  gems
+  shell: bash -lc "gem install mini_magick image_processing -v '~> 1.2'"
+  args:
+    chdir: "{{ app_dir }}"
+
 - name: Run yarn install
   become_user: ec2-user
   shell: |

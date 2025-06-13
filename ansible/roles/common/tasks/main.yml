@@ -20,8 +20,6 @@
       - libxslt-devel
       - ImageMagick
       - ImageMagick-devel
-      - mini_magick
-      - image_processing, '~> 1.2'
       - openssl-devel
       - libcurl
       - libcurl-devel
