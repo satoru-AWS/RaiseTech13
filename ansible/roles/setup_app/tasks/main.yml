@@ -20,12 +20,7 @@
 
 - name: Run bundle install
   become_user: ec2-user
-  shell: |
-    export PATH="$HOME/.rbenv/bin:$HOME/.rbenv/shims:$PATH"
-    eval "$(rbenv init -)"
-    gem uninstall bundler -a -x || true
-    gem install bundler -v {{ bundler_version }}
-    rbenv rehash
+  shell: bash -lc "bundle _2.3.14_ install"
   args:
     chdir: "{{ app_dir }}"
     executable: /bin/bash
