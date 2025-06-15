@@ -20,7 +20,7 @@
 
 - name: Run bundle install
   become_user: ec2-user
-  shell: bash -lc "bundle _2.3.14_ install"
+  shell: bash -lc "bundle install"
   args:
     chdir: "{{ app_dir }}"
     executable: /bin/bash
