@@ -1,3 +1,8 @@
+- name: Remove Gemfile.lock
+  file:
+    path: "{{ app_dir }}/Gemfile.lock"
+    state: absent
+
 - name: Clone Rails app
   git: 
     repo: "https://github.com/yuta-ushijima/raisetech-live8-sample-app.git"
@@ -18,9 +23,7 @@
   shell: |
     export PATH="$HOME/.rbenv/bin:$HOME/.rbenv/shims:$PATH"
     eval "$(rbenv init -)"
-    gem uninstall bundler -a -x || true
-    gem install bundler -v {{ bundler_version }}
-    rbenv rehash
+    bundle _{{ bundler_version }}_ install
   args:
     chdir: "{{ app_dir }}"
     executable: /bin/bash
