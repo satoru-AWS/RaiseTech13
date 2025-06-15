@@ -18,7 +18,7 @@
     owner: ec2-user
     group: ec2-user
 
-- name: Run bundle install
+- name: Run bundle install with specific bundler version
   become_user: ec2-user
   shell: |
     export PATH="$HOME/.rbenv/bin:$HOME/.rbenv/shims:$PATH"
