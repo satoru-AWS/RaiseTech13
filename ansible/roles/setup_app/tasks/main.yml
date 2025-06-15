@@ -20,7 +20,10 @@
 
 - name: Run bundle install
   become_user: ec2-user
-  shell: bash -lc "bundle install"
+  shell: |
+    export PATH="$HOME/.rbenv/bin:$HOME/.rbenv/shims:$PATH"
+    eval "$(rbenv init -)"
+    bundle install
   args:
     chdir: "{{ app_dir }}"
     executable: /bin/bash
