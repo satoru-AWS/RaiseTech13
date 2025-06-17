@@ -20,3 +20,11 @@ end
 describe port(80) do
     it { should be_listening }
 end
+
+alb_dns = ENV['ALB_DNS']
+
+describe "ALB external access" do
+    describe command("curl -s -o /dev/null -w \"%{http_code}\" http://#{alb_dns}") do
+        its(:stdout){ should match /^200/ }
+    end
+end

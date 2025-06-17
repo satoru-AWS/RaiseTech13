@@ -142,6 +142,14 @@ jobs:
             echo "export TARGET_HOST=$PUBLIC_IP" >> $BASH_ENV
 
       - run:
+          name: Get ALB DNSname
+          command: |
+            export ALB_DNS=$(aws cloudformation list-exports \
+              --query "Exports[?Name=='raisetech-alb-dns-name'].Value" \
+              --output text)
+            echo "export ALB_DNS=$ALB_DNS" >> $BASH_ENV
+
+      - run:
           name: Setup SSH key
           command: |
             mkdir -p ~/.ssh
