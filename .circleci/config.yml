@@ -119,6 +119,55 @@ jobs:
 
             ansible-playbook -i inventory ansible/playbook.yml --extra-vars "db_password=$DB_PASSWORD db_host=$DB_HOST alb_dns_name=$ALB_DNS_NAME s3_bucket_name=$S3_BUCKET_NAME"
 
+  execute-serverspec:
+    docker:
+      - image: cimg/ruby:3.2
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints:
+            - "SHA256:vu7ORaAtU++mhu0ZS/iEpSCKW+Ib2FdLOvo6KeGSOMI"
+
+      - run:
+          name: Get EC2 Public IP
+          command: |
+            sudo apt update
+            sudo apt install -y python3-pip jq
+            pip3 install awscli
+
+            PUBLIC_IP=$(aws ec2 describe-instances \
+              --filters "Name=tag:Name,Values=task13-cf-ec2" \
+              --query "Reservations[].Instances[].PublicIpAddress" \
+              --output text --region ap-northeast-1)
+            echo "export TARGET_HOST=$PUBLIC_IP" >> $BASH_ENV
+
+      - run:
+          name: Get ALB DNSname
+          command: |
+            export ALB_DNS=$(aws cloudformation list-exports \
+              --query "Exports[?Name=='raisetech-alb-dns-name'].Value" \
+              --output text)
+            echo "export ALB_DNS=$ALB_DNS" >> $BASH_ENV
+
+      - run:
+          name: Setup SSH key
+          command: |
+            mkdir -p ~/.ssh
+            echo "$EC2_PRIVATE_KEY" > ~/.ssh/id_rsa
+            chmod 600 ~/.ssh/id_rsa
+      
+      - run:
+          name: Install dependences
+          command: |
+            cd serverspec
+            bundle install
+            
+      - run:
+          name: Run serverspec
+          command: |
+            cd serverspec
+            bundle exec rake spec
+
 workflows:
   raisetech-automation-task:
     jobs:
@@ -129,3 +178,6 @@ workflows:
       - execute-ansible:
           requires:
             - execute-cloudformation
+      - execute-serverspec:
+          requires:
+            - execute-ansible
