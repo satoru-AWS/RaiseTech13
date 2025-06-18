@@ -117,7 +117,7 @@ jobs:
               --query "Stacks[0].Outputs[?OutputKey=='S3BucketName'].OutputValue" \
               --output text)
 
-            EXTRA_VARS=$(cat <<EOF
+            EXTRA_VARS=$(cat \<<EOF
             {
               "db_password": "$DB_PASSWORD",
               "db_host": "$DB_HOST",
