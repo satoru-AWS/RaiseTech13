@@ -117,17 +117,7 @@ jobs:
               --query "Stacks[0].Outputs[?OutputKey=='S3BucketName'].OutputValue" \
               --output text)
 
-            EXTRA_VARS=$(cat \<<EOF
-            {
-              "db_password": "$DB_PASSWORD",
-              "db_host": "$DB_HOST",
-              "alb_dns_name": "$ALB_DNS_NAME",
-              "s3_bucket_name": "$S3_BUCKET_NAME"
-            }
-            EOF    
-            )
-
-            ansible-playbook -i inventory ansible/playbook.yml --extra-vars "$EXTRA_VARS"
+            ansible-playbook -i inventory ansible/playbook.yml --extra-vars "db_password=$DB_PASSWORD db_host=$DB_HOST alb_dns_name=$ALB_DNS_NAME s3_bucket_name=$S3_BUCKET_NAME"
 
   execute-serverspec:
     docker:
