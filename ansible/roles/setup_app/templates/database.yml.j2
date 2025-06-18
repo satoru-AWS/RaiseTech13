@@ -14,8 +14,8 @@ default: &default
   encoding: utf8mb4
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
   username: admin
-  password: "{{ db_password }}"
-  host: "{{ db_host }}"
+  password: {{ db_password }}
+  host: {{ db_host }}
 
 development:
   <<: *default
@@ -54,5 +54,5 @@ production:
   <<: *default
   database: raisetech_live8_sample_app_production
   username: admin
-  password: "{{ db_password }}"
-  host: "{{ db_host }}"
+  password: {{ db_password }}
+  host: {{ db_host }}
