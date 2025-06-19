@@ -85,9 +85,8 @@ Resources:
         SecretStringTemplate: '{"username": "admin"}'
         GenerateStringKey: "password"
         PasswordLength: 16
-        ExcludeCharacters: '"@/\'
+        ExcludeCharacters: '"@/\$`|&*(){}[]<>!?^\"'
 
-# RDS(MySQL)
   RDS:
     Type: AWS::RDS::DBInstance
     Properties:
